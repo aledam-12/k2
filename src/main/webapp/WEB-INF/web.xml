@@ -32,6 +32,15 @@
   	</user-data-constraint>
   -->
   </security-constraint>
+  <!-- Aggiunta degli header anti-clickjacking -->
+  <filter>
+    <filter-name>clickjackFilter</filter-name>
+    <filter-class>control.ClickJackFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>clickjackFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
   
   <security-role>
   	<role-name>administrator</role-name>
