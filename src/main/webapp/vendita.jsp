@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1" import="model.UserBean"%>
+    pageEncoding="ISO-8859-1" import="model.UserBean, java.util.regex.Pattern, java.util.regex.Matcher"%>
 <% if (session.getAttribute("registeredUser") == null) {
 		response.sendRedirect("loginPage.jsp");
 	}
@@ -75,6 +75,22 @@
 	<div class="footer">
 		<jsp:include page="footer.jsp"/>
 	</div>
+	<%
+// Controlla se i campi del modulo contengono caratteri speciali
+		String[] fieldsToCheck = {"nome", "prezzo", "spedizione", "descrizione"};
+		Pattern pattern = Pattern.compile("[<>\"'&]");
+		for (String field : fieldsToCheck) {
+    	String value = request.getParameter(field);
+    	if(value != null) {		//per evitare NullPointerException
+    	Matcher matcher = pattern.matcher(value);
+    	if (matcher.find()) {
+        	// Se viene trovato un carattere speciale, mostra un messaggio di errore o gestisci la situazione di conseguenza
+       	 	out.println("Errore: Il campo " + field + " contiene caratteri non validi.");
+       		 // Puoi anche interrompere l'esecuzione del codice qui o eseguire altre azioni necessarie
+    			}
+    		}
+    	}
+	%>
 </body>
 
 </html>

@@ -59,31 +59,26 @@ public class Vendita extends HttpServlet {
 		                    product.setImmagine(name);
 		                }
 		                else {
-		                	if (item.getFieldName().compareTo("nome") == 0) {
-		                		product.setNome(item.getString());
-		                	}
-		                	else if (item.getFieldName().compareTo("prezzo") == 0) {
-		                		product.setPrezzo(Double.parseDouble(item.getString()));
-		                	}
-		                	else if (item.getFieldName().compareTo("spedizione") == 0) {
-		                		product.setSpedizione(Double.parseDouble(item.getString()));
-		                	}
-		                	else if (item.getFieldName().compareTo("tipologia") == 0) {
-		                		product.setTipologia(item.getString());
-		                	}
-							else if (item.getFieldName().compareTo("tag") == 0) {
-								product.setTag(item.getString());
-							}
-							else if (item.getFieldName().compareTo("descrizione") == 0) {
-		                		product.setDescrizione(item.getString());
-		                	}
-		                }
-		            }
+	                        // Controllo dell'input per prevenire XSS
+	                        String fieldName = item.getFieldName();
+	                        String fieldValue = item.getString();
+	                        if (fieldName.equals("nome") || fieldName.equals("tipologia") || fieldName.equals("tag")
+	                                || fieldName.equals("descrizione")) {
+	                            fieldValue = sanitizeInput(fieldValue);
+	                        }
+	                        if (fieldName.equals("prezzo") || fieldName.equals("spedizione")) {
+	                            fieldValue = fieldValue.replaceAll("[^0-9.]", ""); // Accetta solo numeri e punti
+	                        }
+	                        // Imposta i valori nel bean del prodotto
+	                        setProductField(product, fieldName, fieldValue);
+	                    }
+	                }
+		            
 
 		           //File uploaded successfully
 		           request.setAttribute("message", "File Uploaded Successfully");
-		           
-		        } catch (Exception ex) {
+		        }
+		         catch (Exception ex) {
 		           
 		        }          
 
@@ -112,5 +107,36 @@ public class Vendita extends HttpServlet {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}
+	// Metodo per sanificare l'input per prevenire XSS
+    private String sanitizeInput(String input) {
+        // Rimuovi i caratteri speciali che potrebbero essere utilizzati in XSS
+        return input.replaceAll("<", "").replaceAll(">", "").replaceAll("&", "").replaceAll("\"", "").replaceAll("'", "");
+    }
+
+    // Metodo per impostare i campi del bean del prodotto
+    private void setProductField(ProductBean product, String fieldName, String fieldValue) {
+        switch (fieldName) {
+            case "nome":
+                product.setNome(fieldValue);
+                break;
+            case "prezzo":
+                product.setPrezzo(Double.parseDouble(fieldValue));
+                break;
+            case "spedizione":
+                product.setSpedizione(Double.parseDouble(fieldValue));
+                break;
+            case "tipologia":
+                product.setTipologia(fieldValue);
+                break;
+            case "tag":
+                product.setTag(fieldValue);
+                break;
+            case "descrizione":
+                product.setDescrizione(fieldValue);
+                break;
+            default:
+                break;
+        }
+    }
 
 }
