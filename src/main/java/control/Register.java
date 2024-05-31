@@ -1,6 +1,8 @@
 package control;
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -51,15 +53,17 @@ public class Register extends HttpServlet {
 		String cvv = request.getParameter("cvv");
 		String redirectedPage = "/loginPage.jsp";
 		try {
+            // Usiamo SHA-256 per crittografare la password
+            String hashedPassword = hashPassword(password);
 			Connection con = DriverManagerConnectionPool.getConnection();
-			String sql = "INSERT INTO UserAccount(email, passwordUser, nome, cognome, indirizzo, telefono, numero, intestatario, CVV) VALUES (?, MD5(?), ?, ?, ?, ?, ?, ?, ?)";
+			String sql = "INSERT INTO UserAccount(email, passwordUser, nome, cognome, indirizzo, telefono, numero, intestatario, CVV) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			String sql2 = "INSERT INTO Cliente(email) VALUES (?)";
 			String sql3 = "INSERT INTO Venditore(email) VALUES (?)";
 			
 			//Aggiungi a AccountUser
 			PreparedStatement ps = con.prepareStatement(sql);
 			ps.setString(1, email);
-			ps.setString(2, password);
+			ps.setString(2, hashedPassword);
 			ps.setString(3, nome);
 			ps.setString(4, cognome);
 			ps.setString(5, indirizzo);
@@ -92,4 +96,21 @@ public class Register extends HttpServlet {
 		}
 		response.sendRedirect(request.getContextPath() + redirectedPage);
 	}
+	// Metodo per crittografare la password utilizzando SHA-256
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
